@@ -7,7 +7,7 @@ var ground, invisibleGround, groundImage;
 var backgroundImage;
 var cloudsGroup, cloudImage;
 var obstaclesGroup, obstacle1, obstacle2, obstacle3;
-
+var jumpSound,backgSound;
 var score=0;
 
 var gameOver, restart;
@@ -27,36 +27,35 @@ function preload(){
   obstacle1 = loadImage("pipe.png");
   obstacle2 = loadImage("flowerPipe.png");
   obstacle3 = loadImage("mushroom.png");
-  
+  backgSound = loadSound("super-mario-bros-4293.mp3")
+  jumpSound= loadSound("Mario-jump-sound.mp3")
   gameOverImg = loadImage("gameOverText.png");
   restartImg = loadImage("restart.png");
 }
 
 function setup() {
-  createCanvas(displayWidth - 20, displayHeight-120);
+  createCanvas(800,200);
   
-  
-  mario = createSprite(100,180,20,50);
+  backgSound.loop();
+  mario = createSprite(50,180,20,50);
   
   mario.addAnimation("running", mario_running);
 
   mario.addAnimation("collided", mario_collided);
-  mario.scale = 0.55;
-  
+  mario.scale = 0.6;
+  mario.debug=true;
+  mario.setCollider("circle",0,0,40)
   ground = createSprite(200,180,700,20);
   ground.addImage("ground",groundImage);
   ground.x = ground.width /2;
-  ground.velocityX = -(6 + 3*score/100);
-  
-  gameOver = createSprite(300,50);
+
+  gameOver = createSprite(400,50);
   gameOver.addImage(gameOverImg);
   
-  restart = createSprite(300,140);
+  restart = createSprite(400,140);
   restart.addImage(restartImg);
-  
-  
 
-  gameOver.scale = 0.5;
+  gameOver.scale = 0.2;
   restart.scale = 0.5;
 
   gameOver.visible = false;
@@ -78,23 +77,21 @@ function setup() {
 
 function draw() {
   
-  camera.x = mario.x;
-  camera.y = mario.y;
-
-  gameOver.position.x = restart.position.x = camera.x
+  //gameOver.position.x = restart.position.x = camera.x
 
   background(backgroundImage);
   
   textAlign(RIGHT, TOP);
-  text("Score: "+ score, 600,5);
+  text("Score: "+ score, 700,5);
  
   if (gameState===PLAY){
     score = score + Math.round(getFrameRate()/60);
     ground.velocityX = -(6 + 3*score/100);
     
 
-    if(keyDown("space") && mario.y >= 159) {
-      mario.velocityY = -12;
+    if(keyDown("space") && mario.y>=100) {
+      mario.velocityY = -10;
+      jumpSound.play();
     }
    
     
@@ -104,7 +101,7 @@ function draw() {
       ground.x = ground.width/3;
     }
   
-    mario.collide(invisibleGround);
+    mario.collide(ground);
     spawnClouds();
     spawnObstacles();
   
@@ -143,7 +140,7 @@ function draw() {
 function spawnClouds() {
   //write code here to spawn the clouds
   if (frameCount % 60 === 0) {
-    var cloud = createSprite(600,120,40,10);
+    var cloud = createSprite(800,120,40,10);
     cloud.y = Math.round(random(80,120));
     cloud.addImage(cloudImage);
     cloud.scale = 0.5;
@@ -164,7 +161,7 @@ function spawnClouds() {
 function spawnObstacles() {
   if(frameCount % 60 === 0) {
     var obstacle = createSprite(camera.x+width/2,165,10,40);
-    //obstacle.debug = true;
+    obstacle.debug = true;
     obstacle.velocityX = -(6 + 3*score/100);
     
     //generate random obstacles
